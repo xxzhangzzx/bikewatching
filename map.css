@@ -17,4 +17,41 @@
 
 #map svg circle {
   pointer-events: auto;
+  fill: var(--color);
+}
+
+#map svg circle,
+.legend > div {
+  --color-departures: steelblue;
+  --color-arrivals: darkorange;
+  --color: color-mix(
+    in oklch,
+    var(--color-departures) calc(100% * var(--departure-ratio)),
+    var(--color-arrivals)
+  );
+}
+
+.legend {
+  display: flex;
+  margin-block: 1em;
+  gap: 1px;
+}
+
+.legend > div {
+  flex: 1;
+  background: var(--color);
+  color: white;
+  padding: 0.5em 1em;
+}
+
+.legend > div:nth-child(1) {
+  text-align: left;
+}
+
+.legend > div:nth-child(2) {
+  text-align: center;
+}
+
+.legend > div:nth-child(3) {
+  text-align: right;
 }

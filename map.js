@@ -20,6 +20,8 @@ const bikeLaneStyle = {
   'line-opacity': 0.6,
 };
 
+const stationFlow = d3.scaleQuantize().domain([0, 1]).range([0, 0.5, 1]);
+
 function getCoords(station) {
   const lon = station.lon ?? station.Long ?? station.long;
   const lat = station.lat ?? station.Lat ?? station.latitude;
@@ -122,15 +124,17 @@ map.on('load', async () => {
     .enter()
     .append('circle')
     .attr('r', (d) => radiusScale(d.totalTraffic))
-    .attr('fill', 'steelblue')
     .attr('stroke', 'white')
     .attr('stroke-width', 1)
     .attr('fill-opacity', 0.6)
-    .each(function (d) {
-      d3.select(this)
-        .append('title')
-        .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
-    });
+    .style('--departure-ratio', (d) =>
+        stationFlow(d.totalTraffic === 0 ? 0.5 : d.departures / d.totalTraffic),
+  )
+  .each(function (d) {
+    d3.select(this)
+      .append('title')
+      .text(`${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+  });
 
   function updatePositions() {
     circles
@@ -145,11 +149,14 @@ map.on('load', async () => {
     timeFilter === -1 ? radiusScale.range([0, 25]) : radiusScale.range([3, 50]);
 
     circles
-      .data(filteredStations, (d) => d.short_name)
-      .join('circle')
-      .attr('r', (d) => radiusScale(d.totalTraffic))
-      .select('title')
-      .text((d) => `${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
+    .data(filteredStations, (d) => d.short_name)
+    .join('circle')
+    .attr('r', (d) => radiusScale(d.totalTraffic))
+    .style('--departure-ratio', (d) =>
+        stationFlow(d.totalTraffic === 0 ? 0.5 : d.departures / d.totalTraffic),
+    )
+    .select('title')
+    .text((d) => `${d.totalTraffic} trips (${d.departures} departures, ${d.arrivals} arrivals)`);
   }
 
   const timeSlider = document.getElementById('time-slider');
